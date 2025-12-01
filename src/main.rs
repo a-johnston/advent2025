@@ -1,25 +1,20 @@
 use std::collections::HashSet;
 use std::fs::read_to_string;
 
-use phf::{phf_map, Map};
+use phf::{Map, phf_map};
 
 mod day1;
 
-type Parts = Map<&'static str, fn(String) -> String>;
-
-pub struct Part<'a> {
-    pub name: &'a str,
-    pub solver: fn(String) -> String,
-}
+type Parts = &'static [(&'static str, &'static str, fn(String) -> String)];
 
 static PROBLEMS: Map<&'static str, &'static Parts> = phf_map! {
     "day1" => &day1::PARTS,
 };
 
-fn run_solvers(day: String, parts: &Parts) {
+fn run_solvers(day: String, parts: Parts) {
     println!("{}:", day);
-    for (name, solver) in parts {
-        match read_to_string(format!("data/{}/{}.txt", day, name)) {
+    for (name, file, solver) in parts {
+        match read_to_string(format!("data/{}/{}", day, file)) {
             Ok(content) => println!("  > {}: {}", name, solver(content)),
             Err(err) => println!("  > {}: Error: {}", name, err),
         };
