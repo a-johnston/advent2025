@@ -1,14 +1,32 @@
 use std::vec::Vec;
 
-pub static PARTS: super::Parts = &[
-    ("Example 1", "example.txt", count_zeros),
-    ("Part 1", "input.txt", count_zeros),
-    ("Example 2", "example.txt", count_zero_passes),
-    ("Part 2", "input.txt", count_zero_passes),
-];
+use super::Part;
 
 const START: i32 = 50;
 const SIZE: i32 = 100;
+
+pub static PARTS: &'static [Part<'static>] = &[
+    Part {
+        name: "Example 1",
+        file: "example.txt",
+        solver: count_zeros,
+    },
+    Part {
+        name: "Part 1",
+        file: "input.txt",
+        solver: count_zeros,
+    },
+    Part {
+        name: "Example 2",
+        file: "example.txt",
+        solver: count_zero_passes,
+    },
+    Part {
+        name: "Part 2",
+        file: "input.txt",
+        solver: count_zero_passes,
+    },
+];
 
 fn posmod(i: i32, m: i32) -> i32 {
     return ((i % m) + m) % m;

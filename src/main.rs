@@ -1,35 +1,42 @@
-use std::collections::HashSet;
 use std::fs::read_to_string;
-
-use phf::{Map, phf_map};
 
 mod day1;
 
-type Parts = &'static [(&'static str, &'static str, fn(String) -> String)];
+struct Part<'a> {
+    name: &'a str,
+    file: &'a str,
+    solver: fn(String) -> String,
+}
 
-static PROBLEMS: Map<&'static str, &'static Parts> = phf_map! {
-    "day1" => &day1::PARTS,
-};
+static PROBLEMS: &'static [&'static [Part<'static>]] = &[&day1::PARTS];
 
-fn run_solvers(day: String, parts: Parts) {
-    println!("{}:", day);
-    for (name, file, solver) in parts {
-        match read_to_string(format!("data/{}/{}", day, file)) {
-            Ok(content) => println!("  > {}: {}", name, solver(content)),
-            Err(err) => println!("  > {}: Error: {}", name, err),
+fn get_day_num(arg: String) -> Option<usize> {
+    let lower = arg.to_lowercase();
+    let s = lower.strip_prefix("day").unwrap_or(lower.as_str());
+    if let Ok(i) = s.parse::<usize>() {
+        if i > 0 && i <= PROBLEMS.len() {
+            return Some(i);
+        }
+    }
+    println!("Can't handle arg {}", arg);
+    return None;
+}
+
+fn run_solvers(day: &usize) {
+    println!("Day {}:", day);
+    let parts = PROBLEMS[day - 1];
+    for part in parts {
+        match read_to_string(format!("data/{}/{}", day, part.file)) {
+            Ok(content) => println!("  > {}: {}", part.name, (part.solver)(content)),
+            Err(err) => println!("  > {}: Error: {}", part.name, err),
         };
     }
 }
 
 fn main() {
-    let mut days: HashSet<String> = std::env::args().skip(1).collect();
+    let mut days: Vec<usize> = std::env::args().skip(1).filter_map(get_day_num).collect();
     if days.len() == 0 {
-        days = PROBLEMS.keys().map(|s| String::from(*s)).collect();
+        days.push(PROBLEMS.len());
     }
-    for day in days {
-        match PROBLEMS.get(day.as_str()) {
-            Some(parts) => run_solvers(day, parts),
-            None => println!("No day '{}'!", day),
-        }
-    }
+    days.iter().for_each(run_solvers);
 }
