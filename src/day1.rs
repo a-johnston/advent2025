@@ -14,17 +14,24 @@ fn posmod(i: i32, m: i32) -> i32 {
     return ((i % m) + m) % m;
 }
 
+fn parse_rotation(rot: &str) -> Option<i32> {
+    let sign = (rot.starts_with('R') as i32) * 2 - 1;
+    if let Ok(val) = rot[1..].parse::<i32>() {
+        return Some(val * sign);
+    }
+    println!("Invalid rotation: {}", rot);
+    return None;
+}
+
+fn get_rotations(input: &str) -> impl Iterator<Item = i32> {
+    input.split('\n').filter_map(parse_rotation)
+}
+
 fn get_dial_positions(mut pos: i32, input: &str) -> Vec<(i32, i32)> {
     let mut rotations = Vec::new();
-    for rot in input.split('\n') {
-        match rot[1..].parse::<i32>() {
-            Ok(val) => {
-                let change = val * (((rot[0..1].eq("R")) as i32) * 2 - 1);
-                pos = posmod(pos + change, SIZE);
-                rotations.push((change, pos));
-            }
-            Err(_) => println!("Invalid rotation: {}", rot),
-        }
+    for rot in get_rotations(input) {
+        pos = posmod(pos + rot, SIZE);
+        rotations.push((rot, pos));
     }
     return rotations;
 }
