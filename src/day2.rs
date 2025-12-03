@@ -14,12 +14,21 @@ fn fixed_len_funny_sum(a: u64, b: u64) -> u64 {
         return 0;
     }
     if d % 2 == 1 {
-        return 0;
+        return 0; // Odd-length values cannot be funny
     }
+    // For any even-length value, there is one funny value for the upper half of
+    // the digits. For example, for some 4-digit value ABCD, the funny value is
+    // ABAB. Dividing by 100 gives us the sub-funny AB and then multiplying by 101
+    // gives the full funny value. However dividing by 101 also can be used to
+    // determine if a and b are above or below their respective funny values.
+    // Since we are summing the funny values, we can instead sum 101 times the sub-
+    // funny values and move the multiplication outside the sum. This allows the
+    // classic integer range sum formula to be applied.
     let mult = 10_u64.pow(d / 2) + 1;
     let start = (a / mult) + (a % mult != 0) as u64;
     let end = b / mult;
     if start > end {
+        // This happens if both a and b are close and less than their funny value
         return 0;
     }
     let sum = mult * (end - start + 1) * (start + end) / 2;
@@ -33,13 +42,13 @@ fn funny_sum(a: u64, b: u64) -> u64 {
     }
     let a_d = num_digits(a);
     let b_d = num_digits(b);
-    let mut sum = 0;
-    for d in a_d..(b_d + 1) {
-        let start = if a_d == d { a } else { 10_u64.pow(d - 1) };
-        let end = if b_d == d { b } else { 10_u64.pow(d) - 1 };
-        sum += fixed_len_funny_sum(start, end);
-    }
-    return sum;
+    return (a_d..(b_d + 1))
+        .map(|d| {
+            let start = if a_d == d { a } else { 10_u64.pow(d - 1) };
+            let end = if b_d == d { b } else { 10_u64.pow(d) - 1 };
+            fixed_len_funny_sum(start, end)
+        })
+        .sum();
 }
 
 fn parse_range(range: &str) -> Option<(u64, u64)> {

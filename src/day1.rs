@@ -41,6 +41,8 @@ pub fn count_zero_passes(input: &str) -> String {
     let mut last = START;
     let mut count = 0;
     for (change, pos) in get_dial_positions(last, input) {
+        // Count how many full rotations the dial did and then a bit extra if
+        // the overall delta is "pointing" differently than the rotation.
         count += change.abs() / SIZE;
         let delta = pos - last;
         if pos == 0 || (last != 0 && ((delta < 0) ^ (change < 0))) {
