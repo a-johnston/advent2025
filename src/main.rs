@@ -1,4 +1,4 @@
-use std::fs::read_to_string;
+use std::{collections::HashSet, fs::read_to_string};
 
 mod day1;
 mod day2;
@@ -13,25 +13,51 @@ struct Part<'a> {
 
 impl<'a> Part<'a> {
     pub const fn new(name: &'a str, file: &'a str, solver: Solver) -> Self {
-        Self { name: name, file: file, solver: solver }
+        Self {
+            name: name,
+            file: file,
+            solver: solver,
+        }
     }
 }
 
-static PROBLEMS: &'static [&'static [Part<'static>]] = &[
-    &day1::PARTS,
-    &day2::PARTS,
-];
+static DELIMS: &'static [&'static str] = &["-", ".."];
+static PROBLEMS: &'static [&'static [Part<'static>]] = &[&day1::PARTS, &day2::PARTS];
 
-fn get_day_num(arg: String) -> Option<usize> {
-    let lower = arg.to_lowercase();
-    let s = lower.strip_prefix("day").unwrap_or(lower.as_str());
-    if let Ok(i) = s.parse::<usize>() {
-        if i > 0 && i <= PROBLEMS.len() {
-            return Some(i);
+fn is_valid_day(day: usize) -> bool {
+    return day > 0 && day <= PROBLEMS.len();
+}
+
+fn get_arg_days(mut arg: &str) -> HashSet<usize> {
+    arg = arg.trim();
+    if DELIMS.contains(&arg) {
+        return (1..(PROBLEMS.len() + 1)).collect();
+    }
+    if arg.contains(',') {
+        return arg.split(',').map(get_arg_days).flatten().collect();
+    }
+    for delim in DELIMS {
+        if let Some((a, b)) = arg.split_once(delim) {
+            match (a.parse::<usize>(), b.parse::<usize>()) {
+                (Ok(a), Ok(b)) => {
+                    if is_valid_day(a) && is_valid_day(b) && a <= b {
+                        return (a..(b + 1)).collect();
+                    } else {
+                        println!("Invalid range {}", arg);
+                    }
+                }
+                _ => {}
+            }
         }
     }
-    println!("Can't handle arg {}", arg);
-    return None;
+    if let Ok(i) = arg.parse::<usize>() {
+        if is_valid_day(i) {
+            return (i..(i + 1)).collect();
+        } else {
+            println!("Invalid day {}", arg)
+        }
+    }
+    return HashSet::new();
 }
 
 fn run_solvers(day: &usize) {
@@ -46,9 +72,16 @@ fn run_solvers(day: &usize) {
 }
 
 fn main() {
-    let mut days: Vec<usize> = std::env::args().skip(1).filter_map(get_day_num).collect();
-    if days.len() == 0 {
-        days.push(PROBLEMS.len());
+    let args = std::env::args();
+    if args.len() == 1 {
+        run_solvers(&PROBLEMS.len());
+    } else {
+        let day_set: HashSet<usize> = args
+            .skip(1)
+            .flat_map(|s| get_arg_days(s.as_str()))
+            .collect();
+        let mut days: Vec<&usize> = day_set.iter().collect();
+        days.sort();
+        days.iter().for_each(|d| run_solvers(*d));
     }
-    days.iter().for_each(run_solvers);
 }

@@ -23,7 +23,6 @@ fn fixed_len_funny_sum(a: u64, b: u64) -> u64 {
         return 0;
     }
     let sum = mult * (end - start + 1) * (start + end) / 2;
-    // println!("> {}-{} : {} (mult={}, start={}, end={}, d={}", a, b, sum, mult, start, end, d);
     return sum;
 }
 
@@ -40,7 +39,6 @@ fn funny_sum(a: u64, b: u64) -> u64 {
         let end = if b_d == d { b } else { 10_u64.pow(d) - 1 };
         sum += fixed_len_funny_sum(start, end);
     }
-    // println!("{}-{} : {}", a, b, sum);
     return sum;
 }
 
@@ -48,7 +46,7 @@ fn parse_range(range: &str) -> Option<(u64, u64)> {
     if let Some((low, high)) = range.split_once('-') {
         match (low.parse::<u64>(), high.parse::<u64>()) {
             (Ok(start), Ok(end)) => return Some((start, end)),
-            _ => {},
+            _ => {}
         }
     }
     println!("Bad range: '{}'", range);
