@@ -1,40 +1,22 @@
 use std::vec::Vec;
 
-use super::Part;
-
 const START: i32 = 50;
 const SIZE: i32 = 100;
 
-pub static PARTS: &'static [Part<'static>] = &[
-    Part {
-        name: "Example 1",
-        file: "example.txt",
-        solver: count_zeros,
-    },
-    Part {
-        name: "Part 1",
-        file: "input.txt",
-        solver: count_zeros,
-    },
-    Part {
-        name: "Example 2",
-        file: "example.txt",
-        solver: count_zero_passes,
-    },
-    Part {
-        name: "Part 2",
-        file: "input.txt",
-        solver: count_zero_passes,
-    },
+pub static PARTS: &'static [super::Part<'static>] = &[
+    super::Part::new("Example 1", "example.txt", count_zeros),
+    super::Part::new("Part 1", "input.txt", count_zeros),
+    super::Part::new("Example 2", "example.txt", count_zero_passes),
+    super::Part::new("Part 2", "input.txt", count_zero_passes),
 ];
 
 fn posmod(i: i32, m: i32) -> i32 {
     return ((i % m) + m) % m;
 }
 
-fn get_dial_positions(mut pos: i32, input: String) -> Vec<(i32, i32)> {
+fn get_dial_positions(mut pos: i32, input: &str) -> Vec<(i32, i32)> {
     let mut rotations = Vec::new();
-    for rot in input.trim().split('\n') {
+    for rot in input.split('\n') {
         match rot[1..].parse::<i32>() {
             Ok(val) => {
                 let change = val * (((rot[0..1].eq("R")) as i32) * 2 - 1);
@@ -47,15 +29,15 @@ fn get_dial_positions(mut pos: i32, input: String) -> Vec<(i32, i32)> {
     return rotations;
 }
 
-pub fn count_zeros(input: String) -> String {
-    return get_dial_positions(START, input)
+pub fn count_zeros(input: &str) -> String {
+    get_dial_positions(START, input)
         .iter()
         .filter(|(_, pos)| *pos == 0)
         .count()
-        .to_string();
+        .to_string()
 }
 
-pub fn count_zero_passes(input: String) -> String {
+pub fn count_zero_passes(input: &str) -> String {
     let mut last = START;
     let mut count = 0;
     for (change, pos) in get_dial_positions(last, input) {

@@ -1,14 +1,26 @@
 use std::fs::read_to_string;
 
 mod day1;
+mod day2;
+
+type Solver = fn(&str) -> String;
 
 struct Part<'a> {
     name: &'a str,
     file: &'a str,
-    solver: fn(String) -> String,
+    solver: Solver,
 }
 
-static PROBLEMS: &'static [&'static [Part<'static>]] = &[&day1::PARTS];
+impl<'a> Part<'a> {
+    pub const fn new(name: &'a str, file: &'a str, solver: Solver) -> Self {
+        Self { name: name, file: file, solver: solver }
+    }
+}
+
+static PROBLEMS: &'static [&'static [Part<'static>]] = &[
+    &day1::PARTS,
+    &day2::PARTS,
+];
 
 fn get_day_num(arg: String) -> Option<usize> {
     let lower = arg.to_lowercase();
@@ -27,7 +39,7 @@ fn run_solvers(day: &usize) {
     let parts = PROBLEMS[day - 1];
     for part in parts {
         match read_to_string(format!("data/{}/{}", day, part.file)) {
-            Ok(content) => println!("  > {}: {}", part.name, (part.solver)(content)),
+            Ok(content) => println!("  > {}: {}", part.name, (part.solver)(content.trim())),
             Err(err) => println!("  > {}: Error: {}", part.name, err),
         };
     }
