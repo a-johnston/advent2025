@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs::read_to_string};
+use std::{collections::HashSet, fs::read_to_string, time::SystemTime};
 
 mod day1;
 mod day2;
@@ -60,7 +60,15 @@ fn get_arg_days(mut arg: &str) -> HashSet<usize> {
     return HashSet::new();
 }
 
+fn ms_since(time: SystemTime) -> f64 {
+    if let Ok(duration) = SystemTime::now().duration_since(time) {
+        return (duration.as_micros() as f64) / 1000_f64;
+    }
+    return -1_f64;
+}
+
 fn run_solvers(day: &usize) {
+    let start = SystemTime::now();
     println!("Day {}:", day);
     let parts = PROBLEMS[day - 1];
     for part in parts {
@@ -69,10 +77,12 @@ fn run_solvers(day: &usize) {
             Err(err) => println!("  > {}: Error: {}", part.name, err),
         };
     }
+    println!("  [{:0.2}ms]", ms_since(start));
 }
 
 fn main() {
     let args = std::env::args();
+    let start = SystemTime::now();
     if args.len() == 1 {
         run_solvers(&PROBLEMS.len());
     } else {
@@ -84,4 +94,5 @@ fn main() {
         days.sort();
         days.iter().for_each(|d| run_solvers(*d));
     }
+    println!("[{:0.2}ms]", ms_since(start));
 }
