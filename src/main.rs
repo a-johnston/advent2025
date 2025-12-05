@@ -3,6 +3,7 @@ use std::{collections::HashSet, fs::read_to_string, time::SystemTime};
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 
 type Solver = fn(&str) -> String;
 
@@ -23,7 +24,8 @@ impl<'a> Part<'a> {
 }
 
 static DELIMS: &'static [&'static str] = &["-", ".."];
-static PROBLEMS: &'static [&'static [Part<'static>]] = &[&day1::PARTS, &day2::PARTS, &day3::PARTS];
+static PROBLEMS: &'static [&'static [Part<'static>]] =
+    &[&day1::PARTS, &day2::PARTS, &day3::PARTS, &day4::PARTS];
 
 fn is_valid_day(day: usize) -> bool {
     return day > 0 && day <= PROBLEMS.len();
