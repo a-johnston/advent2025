@@ -1,9 +1,11 @@
 use std::{collections::HashSet, fs::read_to_string, time::SystemTime};
 
+mod util;
 mod day1;
 mod day2;
 mod day3;
 mod day4;
+mod day5;
 
 type Solver = fn(&str) -> String;
 
@@ -25,7 +27,7 @@ impl<'a> Part<'a> {
 
 static DELIMS: &'static [&'static str] = &["-", ".."];
 static PROBLEMS: &'static [&'static [Part<'static>]] =
-    &[&day1::PARTS, &day2::PARTS, &day3::PARTS, &day4::PARTS];
+    &[&day1::PARTS, &day2::PARTS, &day3::PARTS, &day4::PARTS, &day5::PARTS];
 
 fn is_valid_day(day: usize) -> bool {
     return day > 0 && day <= PROBLEMS.len();
@@ -76,8 +78,8 @@ fn run_solvers(day: &usize) {
     let parts = PROBLEMS[day - 1];
     for part in parts {
         match read_to_string(format!("data/{}/{}", day, part.file)) {
-            Ok(content) => println!("  > {}: {}", part.name, (part.solver)(content.trim())),
-            Err(err) => println!("  > {}: Error: {}", part.name, err),
+            Ok(content) => println!("  > {}:\t{}", part.name, (part.solver)(content.trim())),
+            Err(err) => println!("  > {}:\tError: {}", part.name, err),
         };
     }
     println!("  [{:0.2}ms]", ms_since(start));

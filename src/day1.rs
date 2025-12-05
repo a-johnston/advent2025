@@ -1,5 +1,7 @@
 use std::vec::Vec;
 
+use super::util::posmod;
+
 const START: i32 = 50;
 const SIZE: i32 = 100;
 
@@ -9,10 +11,6 @@ pub static PARTS: &'static [super::Part<'static>] = &[
     super::Part::new("Example 2", "example.txt", count_zero_passes),
     super::Part::new("Part 2", "input.txt", count_zero_passes),
 ];
-
-fn posmod(i: i32, m: i32) -> i32 {
-    return ((i % m) + m) % m;
-}
 
 fn parse_rotation(rot: &str) -> Option<i32> {
     let sign = (rot.starts_with('R') as i32) * 2 - 1;
