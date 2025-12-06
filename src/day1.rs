@@ -1,7 +1,7 @@
 use std::vec::Vec;
 
 use super::types::Part;
-use super::util::{posmod, parse};
+use super::util::{parse, posmod};
 
 const START: i32 = 50;
 const SIZE: i32 = 100;

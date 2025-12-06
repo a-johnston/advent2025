@@ -1,4 +1,4 @@
-use super::types::Part;
+use super::{types::Part, util::Partition};
 
 pub static PARTS: &'static [Part<'static>] = &Part::full(single_pass, many_passes);
 
@@ -39,6 +39,10 @@ impl Point {
         ADJACENT.iter().map(|c| c + self)
     }
 
+    fn in_bounds(&self, width: usize, height: usize) -> bool {
+        self.x >= 0 && self.x < (width as i32) && self.y >= 0 && self.y < (height as i32)
+    }
+
     fn key(&self, width: usize) -> usize {
         (self.x + self.y * width as i32) as usize
     }
@@ -48,29 +52,37 @@ struct Grid {
     points: Vec<Point>,
     width: usize,
     height: usize,
+    counts: Vec<usize>,
 }
 
 impl Grid {
-
-    fn in_bounds(&self, p: &Point) -> bool {
-        p.x >= 0 && p.x < (self.width as i32) && p.y >= 0 && p.y < (self.height as i32)
+    fn new(width: usize, height: usize) -> Self {
+        Grid {
+            points: vec![],
+            width: width,
+            height: height,
+            counts: vec![0; width * height],
+        }
     }
 
-    fn get_counts(&self) -> Vec<usize> {
-        let mut counts: Vec<usize> = vec![0; self.width * self.height];
-        self.points
-            .iter()
-            .flat_map(|p| p.get_adjacent())
-            .filter(|p| self.in_bounds(p))
-            .map(|p| p.key(self.width))
-            .for_each(|i| counts[i] += 1);
-        return counts;
+    fn add(&mut self, p: &Point) {
+        self.points.push(*p);
+        p.get_adjacent()
+            .filter(|p| p.in_bounds(self.width, self.height))
+            .for_each(|p| self.counts[p.key(self.width)] += 1);
     }
 
-    fn remove(&mut self, counts: &[usize], limit: usize) -> usize {
-        let old_size = self.points.len();
-        self.points.retain(|p| counts[p.key(self.width)] >= limit);
-        return old_size - self.points.len();
+    fn remove(&mut self, limit: usize) -> usize {
+        let new_size = self
+            .points
+            .partition(|p| self.counts[p.key(self.width)] >= limit);
+        let removed = self.points.len() - new_size;
+        self.points.drain(new_size..).for_each(|p| {
+            p.get_adjacent()
+                .filter(|a| a.in_bounds(self.width, self.height))
+                .for_each(|a| self.counts[a.key(self.width)] -= 1)
+        });
+        return removed;
     }
 }
 
@@ -83,28 +95,22 @@ fn parse_row(row: &str, j: i32) -> impl Iterator<Item = Point> {
 
 fn parse_grid(s: &str) -> Grid {
     let lines: Vec<_> = s.split('\n').collect();
-    return Grid {
-        points: lines
-            .iter()
-            .enumerate()
-            .flat_map(|(j, row)| parse_row(row, j as i32))
-            .collect(),
-        width: lines[0].len(),
-        height: lines.len(),
-    };
+    let mut grid = Grid::new(lines[0].len(), lines.len());
+    (lines.iter())
+        .enumerate()
+        .flat_map(|(j, row)| parse_row(row, j as i32))
+        .for_each(|p| grid.add(&p));
+    return grid;
 }
 
 pub fn single_pass(input: &str) -> String {
     let mut grid = parse_grid(input);
-    return grid.remove(&grid.get_counts(), 4).to_string();
+    return grid.remove(4).to_string();
 }
 
 pub fn many_passes(input: &str) -> String {
     let mut grid = parse_grid(input);
     let old = grid.points.len();
-    let mut counts = grid.get_counts();
-    while grid.remove(&counts, 4) > 0 {
-        counts = grid.get_counts();
-    }
+    while grid.remove(4) > 0 {}
     return (old - grid.points.len()).to_string();
 }

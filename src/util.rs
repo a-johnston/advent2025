@@ -1,5 +1,33 @@
 use std::{any::type_name, cmp, fmt, str::FromStr};
 
+pub trait Partition<T> {
+    fn partition<F>(&mut self, indicator: F) -> usize
+    where
+        F: Fn(&T) -> bool;
+}
+
+impl<T> Partition<T> for Vec<T> {
+    fn partition<F>(&mut self, indicator: F) -> usize
+    where
+        F: Fn(&T) -> bool,
+    {
+        let mut j = self.len() - 1;
+        for i in 0..self.len() {
+            if !indicator(&self[i]) {
+                while !indicator(&self[j]) && j > i {
+                    j -= 1;
+                }
+                if j > i {
+                    self.swap(i, j);
+                } else {
+                    return i;
+                }
+            }
+        }
+        return self.len();
+    }
+}
+
 pub const fn posmod(i: i32, m: i32) -> i32 {
     return ((i % m) + m) % m;
 }
