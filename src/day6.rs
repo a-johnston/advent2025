@@ -1,11 +1,11 @@
-use super::types::Part;
+use super::{types::Part, util::parse};
 
 pub static PARTS: &'static [Part<'static>] =
     &Part::full(|s| sum_ops(s, parse_rows), |s| sum_ops(s, parse_cols));
 
 fn parse_rows(source: &Vec<&str>, start: usize, end: usize) -> Vec<u64> {
     (source.iter())
-        .map(move |s| s[start..end].trim().parse::<u64>().unwrap())
+        .map(move |s| parse::<u64>(s[start..end].trim()))
         .collect()
 }
 

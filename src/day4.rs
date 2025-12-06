@@ -51,6 +51,7 @@ struct Grid {
 }
 
 impl Grid {
+
     fn in_bounds(&self, p: &Point) -> bool {
         p.x >= 0 && p.x < (self.width as i32) && p.y >= 0 && p.y < (self.height as i32)
     }

@@ -1,24 +1,19 @@
 use std::vec::Vec;
 
 use super::types::Part;
-use super::util::posmod;
+use super::util::{posmod, parse};
 
 const START: i32 = 50;
 const SIZE: i32 = 100;
 
 pub static PARTS: &'static [Part<'static>] = &Part::full(count_zeros, count_zero_passes);
 
-fn parse_rotation(rot: &str) -> Option<i32> {
-    let sign = (rot.starts_with('R') as i32) * 2 - 1;
-    if let Ok(val) = rot[1..].parse::<i32>() {
-        return Some(val * sign);
-    }
-    println!("Invalid rotation: {}", rot);
-    return None;
+fn parse_rotation(rot: &str) -> i32 {
+    parse::<i32>(&rot[1..]) * ((rot.starts_with('R') as i32) * 2 - 1)
 }
 
 fn get_rotations(input: &str) -> impl Iterator<Item = i32> {
-    input.split('\n').filter_map(parse_rotation)
+    input.split('\n').map(parse_rotation)
 }
 
 fn get_dial_positions(mut pos: i32, input: &str) -> Vec<(i32, i32)> {

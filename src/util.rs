@@ -1,7 +1,15 @@
-use std::{cmp, fmt};
+use std::{any::type_name, cmp, fmt, str::FromStr};
 
 pub const fn posmod(i: i32, m: i32) -> i32 {
     return ((i % m) + m) % m;
+}
+
+pub fn parse<T: FromStr>(s: &str) -> T
+where
+    <T as FromStr>::Err: fmt::Debug,
+{
+    s.parse::<T>()
+        .expect(&format!("Invalid {}: [{}]", type_name::<T>(), s))
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]

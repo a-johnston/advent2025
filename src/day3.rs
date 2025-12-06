@@ -9,7 +9,7 @@ fn get_max_and_index<'a>(i: &'a [u32]) -> (usize, &'a u32) {
     i.iter()
         .enumerate()
         .max_by_key(|(_, value)| *value)
-        .unwrap()
+        .expect("Empty array passed to get_max_and_index")
 }
 
 fn max_joltage(bank: &str, count: usize) -> u64 {

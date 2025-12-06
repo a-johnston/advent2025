@@ -19,8 +19,8 @@ static PROBLEMS: &'static [&'static [types::Part<'static>]] = &[
     &day6::PARTS,
 ];
 
-fn is_valid_day(day: usize) -> bool {
-    return day > 0 && day <= PROBLEMS.len();
+fn is_valid_day(day: &usize) -> bool {
+    return *day > 0 && *day <= PROBLEMS.len();
 }
 
 fn get_arg_days(mut arg: &str) -> HashSet<usize> {
@@ -32,21 +32,20 @@ fn get_arg_days(mut arg: &str) -> HashSet<usize> {
         return arg.split(',').map(get_arg_days).flatten().collect();
     }
     for delim in DELIMS {
-        if let Some((a, b)) = arg.split_once(delim) {
-            match (a.parse::<usize>(), b.parse::<usize>()) {
-                (Ok(a), Ok(b)) => {
-                    if is_valid_day(a) && is_valid_day(b) && a <= b {
-                        return (a..(b + 1)).collect();
-                    } else {
-                        println!("Invalid range {}", arg);
-                    }
-                }
-                _ => {}
-            }
+        if arg.contains(delim) {
+            let bounds: Vec<_> = arg
+                .split(delim)
+                .map(util::parse::<i32>)
+                .map(|i| util::posmod(i, PROBLEMS.len() as i32) as usize)
+                .filter(is_valid_day)
+                .collect();
+            let min = *(bounds.iter().max().unwrap());
+            let max = bounds.iter().min().unwrap() + 1;
+            return (min..max).collect();
         }
     }
     if let Ok(i) = arg.parse::<usize>() {
-        if is_valid_day(i) {
+        if is_valid_day(&i) {
             return (i..(i + 1)).collect();
         } else {
             println!("Invalid day {}", arg)
