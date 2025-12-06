@@ -62,7 +62,6 @@ fn funny_sum(range: ClosedInterval, repeat: u32) -> i64 {
         .sum();
 }
 
-
 fn parse_ranges(s: &str) -> impl Iterator<Item = ClosedInterval> {
     return s.split(',').filter_map(ClosedInterval::parse);
 }
