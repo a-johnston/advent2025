@@ -1,13 +1,7 @@
-use crate::util::ClosedIntervals;
+use super::types::Part;
+use super::util::{ClosedInterval, ClosedIntervals};
 
-use super::util::ClosedInterval;
-
-pub static PARTS: &'static [super::Part<'static>] = &[
-    super::Part::new("Example 1", "example.txt", count_spoiled),
-    super::Part::new("Part 1", "input.txt", count_spoiled),
-    super::Part::new("Example 2", "example.txt", count_total),
-    super::Part::new("Part 2", "input.txt", count_total),
-];
+pub static PARTS: &'static [Part<'static>] = &Part::full(count_spoiled, count_total);
 
 fn count_spoiled(input: &str) -> String {
     let (range_section, id_section) = input.split_once("\n\n").unwrap();

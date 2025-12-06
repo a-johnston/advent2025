@@ -1,13 +1,10 @@
 use std::cmp::max;
 
+use super::types::Part;
 use super::util::ClosedInterval;
 
-pub static PARTS: &'static [super::Part<'static>] = &[
-    super::Part::new("Example 1", "example.txt", parse_and_sum_twice_funny),
-    super::Part::new("Part 1", "input.txt", parse_and_sum_twice_funny),
-    super::Part::new("Example 2", "example.txt", parse_and_sum_all_funny),
-    super::Part::new("Part 2", "input.txt", parse_and_sum_all_funny),
-];
+pub static PARTS: &'static [Part<'static>] =
+    &Part::full(parse_and_sum_twice_funny, parse_and_sum_all_funny);
 
 const fn num_digits(i: i64) -> u32 {
     i.ilog10() + 1

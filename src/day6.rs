@@ -1,9 +1,7 @@
-pub static PARTS: &'static [super::Part<'static>] = &[
-    super::Part::new("Example 1", "example.txt", |s| sum_ops(s, parse_rows)),
-    super::Part::new("Part 1", "input.txt", |s| sum_ops(s, parse_rows)),
-    super::Part::new("Example 2", "example.txt", |s| sum_ops(s, parse_cols)),
-    super::Part::new("Part 2", "input.txt", |s| sum_ops(s, parse_cols)),
-];
+use super::types::Part;
+
+pub static PARTS: &'static [Part<'static>] =
+    &Part::full(|s| sum_ops(s, parse_rows), |s| sum_ops(s, parse_cols));
 
 fn parse_rows(source: &Vec<&str>, start: usize, end: usize) -> Vec<u64> {
     (source.iter())

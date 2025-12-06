@@ -1,9 +1,6 @@
-pub static PARTS: &'static [super::Part<'static>] = &[
-    super::Part::new("Example 1", "example.txt", single_pass),
-    super::Part::new("Part 1", "input.txt", single_pass),
-    super::Part::new("Example 2", "example.txt", many_passes),
-    super::Part::new("Part 2", "input.txt", many_passes),
-];
+use super::types::Part;
+
+pub static PARTS: &'static [Part<'static>] = &Part::full(single_pass, many_passes);
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 struct Point {

@@ -1,9 +1,9 @@
-pub static PARTS: &'static [super::Part<'static>] = &[
-    super::Part::new("Example 1", "example.txt", |s| sum_max_across_banks(s, 2)),
-    super::Part::new("Part 1", "input.txt", |s| sum_max_across_banks(s, 2)),
-    super::Part::new("Example 2", "example.txt", |s| sum_max_across_banks(s, 12)),
-    super::Part::new("Part 2", "input.txt", |s| sum_max_across_banks(s, 12)),
-];
+use super::types::Part;
+
+pub static PARTS: &'static [Part<'static>] = &Part::full(
+    |s| sum_max_across_banks(s, 2),
+    |s| sum_max_across_banks(s, 12),
+);
 
 fn get_max_and_index<'a>(i: &'a [u32]) -> (usize, &'a u32) {
     i.iter()

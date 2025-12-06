@@ -6,28 +6,11 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod types;
 mod util;
 
-type Solver = fn(&str) -> String;
-
-struct Part<'a> {
-    name: &'a str,
-    file: &'a str,
-    solver: Solver,
-}
-
-impl<'a> Part<'a> {
-    pub const fn new(name: &'a str, file: &'a str, solver: Solver) -> Self {
-        Self {
-            name: name,
-            file: file,
-            solver: solver,
-        }
-    }
-}
-
 static DELIMS: &'static [&'static str] = &["-", ".."];
-static PROBLEMS: &'static [&'static [Part<'static>]] = &[
+static PROBLEMS: &'static [&'static [types::Part<'static>]] = &[
     &day1::PARTS,
     &day2::PARTS,
     &day3::PARTS,

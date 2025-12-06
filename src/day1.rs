@@ -1,16 +1,12 @@
 use std::vec::Vec;
 
+use super::types::Part;
 use super::util::posmod;
 
 const START: i32 = 50;
 const SIZE: i32 = 100;
 
-pub static PARTS: &'static [super::Part<'static>] = &[
-    super::Part::new("Example 1", "example.txt", count_zeros),
-    super::Part::new("Part 1", "input.txt", count_zeros),
-    super::Part::new("Example 2", "example.txt", count_zero_passes),
-    super::Part::new("Part 2", "input.txt", count_zero_passes),
-];
+pub static PARTS: &'static [Part<'static>] = &Part::full(count_zeros, count_zero_passes);
 
 fn parse_rotation(rot: &str) -> Option<i32> {
     let sign = (rot.starts_with('R') as i32) * 2 - 1;
