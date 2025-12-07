@@ -97,7 +97,12 @@ fn main() {
             .collect();
         let mut days: Vec<&usize> = day_set.iter().collect();
         days.sort();
-        days.iter().for_each(|d| run_solvers(*d));
+        days.iter().for_each(|d| {
+            if *d != days[0] {
+                println!("");
+            }
+            run_solvers(*d)
+        });
     }
     println!("[{:0.2}ms]", ms_since(start));
 }
