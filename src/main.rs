@@ -1,4 +1,8 @@
-use std::{collections::{HashSet, HashMap}, fs::read_to_string, time::SystemTime};
+use std::{
+    collections::{HashMap, HashSet},
+    fs::read_to_string,
+    time::SystemTime,
+};
 
 mod day1;
 mod day2;
@@ -6,6 +10,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 mod types;
 mod util;
 
@@ -17,6 +22,7 @@ static PROBLEMS: &'static [&'static [types::Part<'static>]] = &[
     &day4::PARTS,
     &day5::PARTS,
     &day6::PARTS,
+    &day7::PARTS,
 ];
 
 fn is_valid_day(day: &usize) -> bool {
