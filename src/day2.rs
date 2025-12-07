@@ -4,7 +4,7 @@ use super::types::Part;
 use super::util::ClosedInterval;
 
 pub static PARTS: &'static [Part<'static>] =
-    &Part::full(parse_and_sum_twice_funny, parse_and_sum_all_funny);
+    &super::common_parts![parse_and_sum_twice_funny, parse_and_sum_all_funny];
 
 const fn num_digits(i: i64) -> u32 {
     i.ilog10() + 1

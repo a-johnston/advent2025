@@ -1,6 +1,6 @@
-use super::{types::Part, util::Partition};
+use super::{common_parts, types::Part, util::Partition};
 
-pub static PARTS: &'static [Part<'static>] = &Part::full(single_pass, many_passes);
+pub static PARTS: &'static [Part<'static>] = &common_parts![single_pass, many_passes];
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 struct Point {

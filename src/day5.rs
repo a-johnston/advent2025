@@ -1,7 +1,7 @@
 use super::types::Part;
 use super::util::{ClosedInterval, ClosedIntervals, parse};
 
-pub static PARTS: &'static [Part<'static>] = &Part::full(count_spoiled, count_total);
+pub static PARTS: &'static [Part<'static>] = &super::common_parts![count_spoiled, count_total];
 
 fn read_sections(input: &str) -> (&str, &str) {
     input.split_once("\n\n").expect("Wrong number of sections")

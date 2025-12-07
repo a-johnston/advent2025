@@ -6,7 +6,7 @@ use super::util::{parse, posmod};
 const START: i32 = 50;
 const SIZE: i32 = 100;
 
-pub static PARTS: &'static [Part<'static>] = &Part::full(count_zeros, count_zero_passes);
+pub static PARTS: &'static [Part<'static>] = &super::common_parts![count_zeros, count_zero_passes];
 
 fn parse_rotation(rot: &str) -> i32 {
     parse::<i32>(&rot[1..]) * ((rot.starts_with('R') as i32) * 2 - 1)

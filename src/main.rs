@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs::read_to_string, time::SystemTime};
+use std::{collections::{HashSet, HashMap}, fs::read_to_string, time::SystemTime};
 
 mod day1;
 mod day2;
@@ -64,11 +64,16 @@ fn ms_since(time: SystemTime) -> f64 {
 fn run_solvers(day: &usize) {
     let start = SystemTime::now();
     println!("Day {}:", day);
+    let mut name_counts: HashMap<&str, u32> = HashMap::new();
     let parts = PROBLEMS[day - 1];
     for part in parts {
+        let index = name_counts.get(part.name).unwrap_or(&0_u32) + 1;
+        let name = format!("{} {}", part.name, index);
+        name_counts.insert(part.name, index);
+
         match read_to_string(format!("data/{}/{}", day, part.file)) {
-            Ok(content) => println!("  > {}:\t{}", part.name, (part.solver)(content.trim())),
-            Err(err) => println!("  > {}:\tError: {}", part.name, err),
+            Ok(content) => println!("  > {}:\t{}", name, (part.solver)(content.trim())),
+            Err(err) => println!("  > {}:\tError: {}", name, err),
         };
     }
     println!("  [{:0.2}ms]", ms_since(start));

@@ -1,9 +1,6 @@
-use super::types::Part;
+use super::{common_parts, types::Part};
 
-pub static PARTS: &'static [Part<'static>] = &Part::full(
-    |s| sum_max_across_banks(s, 2),
-    |s| sum_max_across_banks(s, 12),
-);
+pub static PARTS: &'static [Part<'static>] = &common_parts![part_1, part_2];
 
 fn get_max_and_index<'a>(i: &'a [u32]) -> (usize, &'a u32) {
     i.iter()
@@ -32,4 +29,12 @@ fn sum_max_across_banks(input: &str, count: usize) -> String {
         .map(|b| max_joltage(b, count))
         .sum::<u64>()
         .to_string()
+}
+
+fn part_1(input: &str) -> String {
+    sum_max_across_banks(input, 2)
+}
+
+fn part_2(input: &str) -> String {
+    sum_max_across_banks(input, 12)
 }

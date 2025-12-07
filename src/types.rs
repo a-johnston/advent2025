@@ -14,21 +14,11 @@ impl<'a> Part<'a> {
             solver: solver,
         }
     }
+}
 
-    #[allow(dead_code)]
-    pub const fn half(a: Solver) -> [Part<'a>; 2] {
-        [
-            Part::new("Example 1", "example.txt", a),
-            Part::new("Part 1", "input.txt", a),
-        ]
-    }
-
-    pub const fn full(a: Solver, b: Solver) -> [Part<'a>; 4] {
-        [
-            Part::new("Example 1", "example.txt", a),
-            Part::new("Part 1", "input.txt", a),
-            Part::new("Example 2", "example.txt", b),
-            Part::new("Part 2", "input.txt", b),
-        ]
-    }
+#[macro_export]
+macro_rules! common_parts {
+    ( $( $solver:expr ),* ) => {
+        [ $( Part::new("Example", "example.txt", $solver), Part::new("Input", "input.txt", $solver) ),* ]
+    };
 }
