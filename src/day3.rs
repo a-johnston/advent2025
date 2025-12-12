@@ -1,6 +1,6 @@
-use super::{common_parts, types::Part};
+use super::{all_parts, types::Part};
 
-pub static PARTS: &'static [Part<'static>] = &common_parts![part_1, part_2];
+pub static PARTS: &'static [Part<'static>] = &all_parts![part_1, part_2];
 
 fn get_max_and_index<'a>(i: &'a [u32]) -> (usize, &'a u32) {
     i.iter()

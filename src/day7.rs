@@ -1,9 +1,9 @@
 use std::iter;
 
-use super::{common_parts, types::Part};
+use super::{all_parts, types::Part};
 
 pub static PARTS: &'static [Part<'static>] =
-    &common_parts![count_classical_splits, count_quantum_splits];
+    &all_parts![count_classical_splits, count_quantum_splits];
 
 struct Row {
     split_count: u64,

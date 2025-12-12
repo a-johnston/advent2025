@@ -12,6 +12,7 @@ mod day5;
 mod day6;
 mod day7;
 mod day8;
+mod day9;
 mod types;
 mod util;
 
@@ -25,6 +26,7 @@ static PROBLEMS: &'static [&'static [types::Part<'static>]] = &[
     &day6::PARTS,
     &day7::PARTS,
     &day8::PARTS,
+    &day9::PARTS,
 ];
 
 fn is_valid_day(day: &usize) -> bool {

@@ -1,10 +1,9 @@
 use std::cmp::max;
 
-use super::types::Part;
-use super::util::ClosedInterval;
+use super::types::{ClosedInterval, Part};
 
 pub static PARTS: &'static [Part<'static>] =
-    &super::common_parts![parse_and_sum_twice_funny, parse_and_sum_all_funny];
+    &super::all_parts![parse_and_sum_twice_funny, parse_and_sum_all_funny];
 
 const fn num_digits(i: i64) -> u32 {
     i.ilog10() + 1

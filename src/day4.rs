@@ -1,55 +1,13 @@
-use super::{common_parts, types::Part, util::Partition};
+use super::{
+    all_parts,
+    types::{Part, Vec3},
+    util::Partition,
+};
 
-pub static PARTS: &'static [Part<'static>] = &common_parts![single_pass, many_passes];
-
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
-struct Point {
-    x: i32,
-    y: i32,
-}
-
-static ADJACENT: &[Point] = &[
-    Point::new(1, 0),
-    Point::new(0, 1),
-    Point::new(-1, 0),
-    Point::new(0, -1),
-    Point::new(1, 1),
-    Point::new(-1, 1),
-    Point::new(-1, -1),
-    Point::new(1, -1),
-];
-
-impl std::ops::Add<&Point> for &Point {
-    type Output = Point;
-
-    fn add(self, rhs: &Point) -> Point {
-        Point {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
-}
-
-impl Point {
-    const fn new(x: i32, y: i32) -> Self {
-        Point { x: x, y: y }
-    }
-
-    fn get_adjacent(&self) -> impl Iterator<Item = Point> {
-        ADJACENT.iter().map(|c| c + self)
-    }
-
-    fn in_bounds(&self, width: usize, height: usize) -> bool {
-        self.x >= 0 && self.x < (width as i32) && self.y >= 0 && self.y < (height as i32)
-    }
-
-    fn key(&self, width: usize) -> usize {
-        (self.x + self.y * width as i32) as usize
-    }
-}
+pub static PARTS: &'static [Part<'static>] = &all_parts![single_pass, many_passes];
 
 struct Grid {
-    points: Vec<Point>,
+    points: Vec<Vec3>,
     width: usize,
     height: usize,
     counts: Vec<usize>,
@@ -65,9 +23,9 @@ impl Grid {
         }
     }
 
-    fn add(&mut self, p: &Point) {
+    fn add(&mut self, p: &Vec3) {
         self.points.push(*p);
-        p.get_adjacent()
+        p.get_adjacent_2d()
             .filter(|p| p.in_bounds(self.width, self.height))
             .for_each(|p| self.counts[p.key(self.width)] += 1);
     }
@@ -78,7 +36,7 @@ impl Grid {
             .partition(|p| self.counts[p.key(self.width)] >= limit);
         let removed = self.points.len() - new_size;
         self.points.drain(new_size..).for_each(|p| {
-            p.get_adjacent()
+            p.get_adjacent_2d()
                 .filter(|a| a.in_bounds(self.width, self.height))
                 .for_each(|a| self.counts[a.key(self.width)] -= 1)
         });
@@ -86,11 +44,11 @@ impl Grid {
     }
 }
 
-fn parse_row(row: &str, j: i32) -> impl Iterator<Item = Point> {
+fn parse_row(row: &str, j: i32) -> impl Iterator<Item = Vec3> {
     row.chars()
         .enumerate()
         .filter(|(_, c)| *c != '.')
-        .map(move |(i, _)| Point::new(i as i32, j as i32))
+        .map(move |(i, _)| Vec3(i as i64, j as i64, 0))
 }
 
 fn parse_grid(s: &str) -> Grid {

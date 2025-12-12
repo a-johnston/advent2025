@@ -1,6 +1,6 @@
 use std::collections::{BinaryHeap, HashMap};
 
-use super::types::Part;
+use super::types::{Part, Vec3};
 
 pub static PARTS: &'static [Part<'static>] = &[
     Part::new("Example", "example.txt", |s| times_top_circuits(s, 10, 3)),
@@ -9,25 +9,8 @@ pub static PARTS: &'static [Part<'static>] = &[
     Part::new("Part", "input.txt", full_circuit_last_pair),
 ];
 
-#[derive(PartialEq, Eq, Hash, Debug)]
-struct Point(i64, i64, i64);
-
-impl Point {
-    fn parse(s: &str) -> Self {
-        let vals: Vec<_> = s.split(',').filter_map(|i| i.parse().ok()).collect();
-        return Point(vals[0], vals[1], vals[2]);
-    }
-
-    fn sq_dist(&self, other: &Point) -> i64 {
-        let dx = self.0 - other.0;
-        let dy = self.1 - other.1;
-        let dz = self.2 - other.2;
-        return dx * dx + dy * dy + dz * dz;
-    }
-}
-
 struct Graph {
-    points: Vec<Point>,
+    points: Vec<Vec3>,
     edge_heap: BinaryHeap<(i64, usize, usize)>,
     point_to_circuit: HashMap<usize, usize>,
     circuit_to_points: HashMap<usize, Vec<usize>>,
@@ -35,7 +18,7 @@ struct Graph {
 
 impl Graph {
     fn read(s: &str) -> Self {
-        let points: Vec<_> = s.split('\n').map(Point::parse).collect();
+        let points: Vec<_> = s.split('\n').map(Vec3::parse).collect();
         let edge_heap: BinaryHeap<_> = (0..points.len())
             .flat_map(|i| {
                 ((i + 1)..points.len())
