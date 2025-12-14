@@ -49,13 +49,15 @@ where
         .expect(&format!("Invalid {}: [{}]", type_name::<T>(), s))
 }
 
-pub fn zip<'a, T>(a: &'a Vec<T>, b: &'a Vec<T>) -> impl Iterator<Item = (&'a T, &'a T)> {
+#[allow(dead_code)]
+pub fn zip<'a, A, B>(a: &'a Vec<A>, b: &'a Vec<B>) -> impl Iterator<Item = (&'a A, &'a B)> {
     a.iter().zip(b.iter())
 }
 
-// pub fn zop<'a, T>(a: &'a Vec<T>, b: &'a Vec<T>, f: fn(&'a T, &'a T) -> T) -> Vec<T> {
-//     zip(a, b).map(|(aa, bb)| f(aa, bb)).collect()
-// }
+#[allow(dead_code)]
+pub fn zop<'a, T>(a: &'a Vec<T>, b: &'a Vec<T>, f: fn(&'a T, &'a T) -> T) -> Vec<T> {
+    zip(a, b).map(|(aa, bb)| f(aa, bb)).collect()
+}
 
 pub fn set_bits(bits: &Vec<usize>) -> usize {
     bits.iter().fold(0, |a, b| a + (1 << b))
