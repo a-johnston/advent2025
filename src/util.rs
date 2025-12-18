@@ -59,10 +59,6 @@ pub fn zop<'a, T>(a: &'a Vec<T>, b: &'a Vec<T>, f: fn(&'a T, &'a T) -> T) -> Vec
     zip(a, b).map(|(aa, bb)| f(aa, bb)).collect()
 }
 
-pub fn set_bits(bits: &Vec<usize>) -> usize {
-    bits.iter().fold(0, |a, b| a + (1 << b))
-}
-
 pub fn mid(s: &str, i: usize) -> &str {
     &s[i..(s.len() - i)]
 }
