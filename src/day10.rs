@@ -1,7 +1,7 @@
 use std::collections::{HashSet, VecDeque};
 
 use super::{
-    ilp::{LinearEquation, LinearSystem, ReducedRowEcheleon},
+    ilp::{Bound, LinearEquation, LinearSystem, ReducedRowEcheleon},
     types::Part,
     util::{mid, parse},
 };
@@ -117,7 +117,9 @@ fn fewest_light_presses(machine: Machine) -> usize {
 }
 
 fn fewest_joltage_presses(machine: Machine) -> usize {
-    let rre: ReducedRowEcheleon = machine.into();
+    let mut rre: ReducedRowEcheleon = machine.into();
+    (0..rre.get_var_count()).for_each(|i| rre.apply_bound(i, Bound(Some(0), None)));
+    rre.infer_bounds();
     println!("\nRRE for Machine:");
     rre.print_info();
     0

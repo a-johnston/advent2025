@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::{HashMap, HashSet}};
 
 // Represents a linear equation of the form a_1 * x_1 + a_2 * x_2 + .. a_n * x_n = b
 pub struct LinearEquation {
@@ -48,21 +48,36 @@ impl LinearEquation {
         rhs / self.a[column]
     }
 
-    fn get_implied_bound(&self, index: usize) -> (Option<i32>, Option<i32>) {
+    fn get_implied_bound(&self, index: usize, bounds: &Vec<Bound>) -> Bound {
+        let other_ranges(self.get_vars_except(pivot).iter()).flat_map(|i| {
+
+        });
         if self.a[index] == 0 {
-            return (None, None);
+            return Bound(None, None);
         }
         let solve_for: Vec<_> = (0..self.a.len())
             .filter(|i| *i != index && self.a[*i] != 0)
             .collect();
         if solve_for.len() != 1 {
-            return (None, None);
+            return Bound(None, None);
         }
         if (self.a[index] * self.a[solve_for[0]]) > 0 {
-            return (None, Some(self.b / self.a[index]));
+            return Bound(None, Some(self.b / self.a[index]));
         } else {
-            return (Some(self.b / -self.a[index]), None);
+            return Bound(Some(self.b / -self.a[index]), None);
         }
+    }
+
+    fn get_vars(&self) -> impl Iterator<Item = usize> {
+        (self.a.iter().enumerate())
+            .filter(|(_, a)| **a != 0)
+            .map(|(i, _)| i)
+    }
+
+    fn get_vars_except(&self, pivot: usize) -> HashSet<usize> {
+        self.get_vars()
+            .filter(|i| *i != pivot && self.a[*i] != 0)
+            .collect()
     }
 }
 
@@ -72,18 +87,31 @@ pub struct LinearSystem {
 
 impl FromIterator<LinearEquation> for LinearSystem {
     fn from_iter<T: IntoIterator<Item = LinearEquation>>(iter: T) -> Self {
-        LinearSystem {
-            rows: iter.into_iter().collect(),
-        }
+        let rows = iter.into_iter().collect();
+        LinearSystem { rows: rows }
     }
 }
 
 #[derive(Clone)]
-struct Bound(Option<i32>, Option<i32>);
+pub struct Bound(pub Option<i32>, pub Option<i32>);
 
 impl Bound {
     fn contains(&self, val: i32) -> bool {
         self.0.map_or(true, |l| l <= val) && self.1.map_or(true, |u| u >= val)
+    }
+}
+
+impl std::ops::BitAnd<Bound> for &Bound {
+    type Output = Option<Bound>;
+
+    fn bitand(self, rhs: Bound) -> Self::Output {
+        let low = self.0.max(rhs.0);
+        let high = self.1.min(rhs.1);
+        if high < low {
+            None
+        } else {
+            Some(Bound(low, high))
+        }
     }
 }
 
@@ -102,6 +130,7 @@ pub struct ReducedRowEcheleon {
     system: LinearSystem,
     pivots: HashMap<usize, usize>, // Column/variable index to row index
     bounds: Vec<Bound>,
+    free: Vec<usize>,
 }
 
 impl Into<ReducedRowEcheleon> for LinearSystem {
@@ -139,30 +168,48 @@ impl Into<ReducedRowEcheleon> for LinearSystem {
             }
             !zero
         });
-        // Remove any unused vars in reverse order
-        let mut reindex: HashMap<usize, usize> = HashMap::new();
-        for i in (0..var_count).rev() {
-            if self.rows.iter().all(|r| r.a[i] == 0) {
-                self.rows.iter_mut().for_each(|r| {
-                    r.a.remove(i);
-                });
-            } else {
-                reindex.insert(i, reindex.len());
-            }
-        }
-        // Re-reverse the reversed reindex
         ReducedRowEcheleon {
             system: self,
-            pivots: pivots
-                .iter()
-                .map(|(k, v)| (reindex.len() - 1 - reindex[k], *v))
+            free: (0..var_count)
+                .filter(|i| !pivots.contains_key(&i))
                 .collect(),
-            bounds: vec![Bound(None, None); reindex.len()],
+            pivots: pivots,
+            bounds: vec![Bound(None, None); var_count],
         }
     }
 }
 
 impl ReducedRowEcheleon {
+    pub const fn get_var_count(&self) -> usize {
+        self.bounds.len()
+    }
+
+    pub fn apply_bound(&mut self, var: usize, bound: Bound) {
+        if let Some(new_bound) = &self.bounds[var] & bound {
+            self.bounds[var] = new_bound;
+        } else {
+            panic!("No solution for {var}");
+        }
+    }
+
+    pub fn infer_bounds(&mut self) {
+        let pivot_free_map: HashMap<_, _> = (self.pivots.iter())
+            .map(|(p, r)| (*p, self.system.rows[*r].get_vars_except(*p)))
+            .collect();
+        let mut pivots: Vec<usize> = self.pivots.keys().cloned().collect();
+        pivots.sort_by_key(|p| pivot_free_map[p].len());
+        for pivot in pivots {
+            let row = &self.system.rows[self.pivots[&pivot]];
+            for var in row.get_vars() {
+                if let Some(new_bounds) = &self.bounds[var] & row.get_implied_bound(var, &self.bounds) {
+                    self.bounds[var] = new_bounds
+                } else {
+                    panic!("No solution for {var}");
+                }
+            }
+        }
+    }
+
     pub fn print_info(&self) {
         for row in &self.system.rows {
             println!("{:?}", row);
