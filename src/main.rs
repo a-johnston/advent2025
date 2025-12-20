@@ -17,6 +17,7 @@ mod day10;
 mod day11;
 mod day12;
 mod types;
+mod ilp;
 mod util;
 
 static DELIMS: &'static [&'static str] = &["-", ".."];
@@ -87,10 +88,12 @@ fn run_solvers(day: &usize) {
         let name = format!("{} {}", part.name, index);
         name_counts.insert(part.name, index);
 
+        let part_start = SystemTime::now();
         match read_to_string(format!("data/{}/{}", day, part.file)) {
-            Ok(content) => println!("  > {}:\t{}", name, (part.solver)(content.trim())),
-            Err(err) => println!("  > {}:\tError: {}", name, err),
+            Ok(content) => println!(" > {}:\t{}", name, (part.solver)(content.trim())),
+            Err(err) => println!(" > {}:\tError: {}", name, err),
         };
+        println!("   [{:0.2}ms]", ms_since(part_start));
     }
     println!("  [{:0.2}ms]", ms_since(start));
 }
