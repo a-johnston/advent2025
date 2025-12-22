@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}};
+use std::collections::HashMap;
 
 // Represents a linear equation of the form a_1 * x_1 + a_2 * x_2 + .. a_n * x_n = b
 pub struct LinearEquation {
@@ -38,34 +38,15 @@ impl std::ops::Mul<i32> for &LinearEquation {
 }
 
 impl LinearEquation {
-    fn solve(&self, column: usize, assigned: &Vec<i32>) -> i32 {
-        if self.a.len() != assigned.len() || assigned[column] != 0 {
-            panic!();
-        }
-        let rhs = (self.a.iter().zip(assigned.iter()))
-            .map(|(a, b)| a * b)
-            .fold(self.b, |s, c| s - c);
-        rhs / self.a[column]
-    }
-
     fn get_implied_bound(&self, index: usize, bounds: &Vec<Bound>) -> Bound {
-        let other_ranges(self.get_vars_except(pivot).iter()).flat_map(|i| {
-
-        });
         if self.a[index] == 0 {
-            return Bound(None, None);
+            return Bound::DEFAULT;
         }
-        let solve_for: Vec<_> = (0..self.a.len())
-            .filter(|i| *i != index && self.a[*i] != 0)
-            .collect();
-        if solve_for.len() != 1 {
-            return Bound(None, None);
-        }
-        if (self.a[index] * self.a[solve_for[0]]) > 0 {
-            return Bound(None, Some(self.b / self.a[index]));
-        } else {
-            return Bound(Some(self.b / -self.a[index]), None);
-        }
+        let other_bound = self
+            .get_vars_except(index)
+            .map(|i| &bounds[i] * self.a[i])
+            .fold(Bound::point(0), |a, b| a + b);
+        &((&other_bound * -1) + self.b) * (1 / self.a[index])
     }
 
     fn get_vars(&self) -> impl Iterator<Item = usize> {
@@ -74,10 +55,9 @@ impl LinearEquation {
             .map(|(i, _)| i)
     }
 
-    fn get_vars_except(&self, pivot: usize) -> HashSet<usize> {
+    fn get_vars_except(&self, pivot: usize) -> impl Iterator<Item = usize> {
         self.get_vars()
-            .filter(|i| *i != pivot && self.a[*i] != 0)
-            .collect()
+            .filter(move |i| *i != pivot && self.a[*i] != 0)
     }
 }
 
@@ -96,8 +76,55 @@ impl FromIterator<LinearEquation> for LinearSystem {
 pub struct Bound(pub Option<i32>, pub Option<i32>);
 
 impl Bound {
-    fn contains(&self, val: i32) -> bool {
+    const DEFAULT: Bound = Bound(None, None);
+
+    pub const fn point(value: i32) -> Self {
+        Bound(Some(value), Some(value))
+    }
+
+    pub fn closed_low(low: i32) -> Self {
+        Bound(Some(low), None)
+    }
+
+    pub fn range(&self, max: i32) -> std::ops::Range<i32> {
+        self.0.unwrap_or(-max)..self.1.unwrap_or(max)
+    }
+
+    pub fn contains(&self, val: i32) -> bool {
         self.0.map_or(true, |l| l <= val) && self.1.map_or(true, |u| u >= val)
+    }
+}
+
+impl std::ops::Add<i32> for Bound {
+    type Output = Bound;
+
+    fn add(self, rhs: i32) -> Self::Output {
+        Bound(self.0.map(|l| l + rhs), self.1.map(|u| u + rhs))
+    }
+}
+
+impl std::ops::Add<Bound> for Bound {
+    type Output = Bound;
+
+    fn add(self, rhs: Bound) -> Self::Output {
+        Bound(
+            self.0.map(|l| rhs.0.map(|ll| l + ll)).unwrap_or(None),
+            self.1.map(|u| rhs.1.map(|uu| u + uu)).unwrap_or(None),
+        )
+    }
+}
+
+impl std::ops::Mul<i32> for &Bound {
+    type Output = Bound;
+
+    fn mul(self, rhs: i32) -> Self::Output {
+        if rhs == 0 {
+            Bound::point(0)
+        } else if rhs > 0 {
+            Bound(self.0.map(|l| l * rhs), self.1.map(|u| u * rhs))
+        } else {
+            Bound(self.1.map(|u| u * rhs), self.0.map(|l| l * rhs))
+        }
     }
 }
 
@@ -106,12 +133,21 @@ impl std::ops::BitAnd<Bound> for &Bound {
 
     fn bitand(self, rhs: Bound) -> Self::Output {
         let low = self.0.max(rhs.0);
-        let high = self.1.min(rhs.1);
+        let high = [self.1, rhs.1].iter().filter_map(|v| v.clone()).min();
         if high < low {
             None
         } else {
             Some(Bound(low, high))
         }
+    }
+}
+
+impl std::ops::BitOr<Bound> for &Bound {
+    type Output = Bound;
+
+    fn bitor(self, rhs: Bound) -> Self::Output {
+        let low = [self.0, rhs.0].iter().filter_map(|v| v.clone()).min();
+        Bound(low, self.1.max(rhs.1))
     }
 }
 
@@ -174,7 +210,7 @@ impl Into<ReducedRowEcheleon> for LinearSystem {
                 .filter(|i| !pivots.contains_key(&i))
                 .collect(),
             pivots: pivots,
-            bounds: vec![Bound(None, None); var_count],
+            bounds: vec![Bound::DEFAULT; var_count],
         }
     }
 }
@@ -193,21 +229,39 @@ impl ReducedRowEcheleon {
     }
 
     pub fn infer_bounds(&mut self) {
-        let pivot_free_map: HashMap<_, _> = (self.pivots.iter())
-            .map(|(p, r)| (*p, self.system.rows[*r].get_vars_except(*p)))
-            .collect();
-        let mut pivots: Vec<usize> = self.pivots.keys().cloned().collect();
-        pivots.sort_by_key(|p| pivot_free_map[p].len());
+        let mut pivots: Vec<&usize> = self.pivots.keys().collect();
+        pivots.sort_by_key(|p| self.system.rows[self.pivots[p]].get_vars().count());
         for pivot in pivots {
             let row = &self.system.rows[self.pivots[&pivot]];
             for var in row.get_vars() {
-                if let Some(new_bounds) = &self.bounds[var] & row.get_implied_bound(var, &self.bounds) {
+                if let Some(new_bounds) =
+                    &self.bounds[var] & row.get_implied_bound(var, &self.bounds)
+                {
                     self.bounds[var] = new_bounds
                 } else {
                     panic!("No solution for {var}");
                 }
             }
         }
+    }
+
+    fn accumulate_free_options(&self, free: usize, options: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+        self.bounds[free]
+            .range(100)
+            .flat_map(|value| {
+                options.iter().map(move |r| {
+                    let mut new = r.clone();
+                    new[free] = value;
+                    new
+                })
+            })
+            .collect()
+    }
+
+    pub fn get_solutions(&self) -> Vec<Vec<i32>> {
+        (self.free.iter()).fold(vec![vec![0; self.get_var_count()]], |options, free| {
+            self.accumulate_free_options(*free, options)
+        })
     }
 
     pub fn print_info(&self) {
