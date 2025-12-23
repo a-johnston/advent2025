@@ -7,6 +7,10 @@ use super::util::gcd;
 pub struct Fraction(i32, i32);
 
 impl Fraction {
+    const fn signum(&self) -> i32 {
+        return self.0.signum() * self.1.signum();
+    }
+
     const fn is_integer(&self) -> bool {
         (self.0 % self.1) == 0
     }
@@ -19,7 +23,7 @@ impl Fraction {
         self.0 / self.1
     }
 
-    fn reduce(&self) -> Self {
+    const fn reduce(&self) -> Self {
         if self.0 == 0 || self.1 == 0 {
             Fraction(0, 1)
         } else {
@@ -31,7 +35,7 @@ impl Fraction {
 
 impl PartialEq for Fraction {
     fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0 && self.1 == other.1
+        self.0 * other.1 == other.0 * self.1
     }
 }
 
@@ -45,10 +49,10 @@ impl PartialOrd for Fraction {
 
 impl Ord for Fraction {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        let d = self - other;
-        if d.0 > 0 {
+        let sign = (self - other).signum();
+        if sign > 0 {
             std::cmp::Ordering::Greater
-        } else if d.0 < 0 {
+        } else if sign < 0 {
             std::cmp::Ordering::Less
         } else {
             std::cmp::Ordering::Equal
@@ -78,7 +82,7 @@ macro_rules! fraction_i32_ops {
             type Output = Fraction;
 
             fn mul(self, rhs: i32) -> Self::Output {
-                Fraction(self.0 * rhs, self.1).reduce()
+                Fraction(self.0 * rhs, self.1)
             }
         }
 
@@ -86,7 +90,7 @@ macro_rules! fraction_i32_ops {
             type Output = Fraction;
 
             fn div(self, rhs: i32) -> Self::Output {
-                Fraction(self.0, self.1 * rhs).reduce()
+                Fraction(self.0, self.1 * rhs)
             }
         }
     };
@@ -107,7 +111,7 @@ macro_rules! fraction_fraction_ops {
             type Output = Fraction;
 
             fn mul(self, rhs: $rhs) -> Self::Output {
-                Fraction(self.0 * rhs.0, self.1 * rhs.1).reduce()
+                Fraction(self.0 * rhs.0, self.1 * rhs.1)
             }
         }
 
@@ -115,7 +119,7 @@ macro_rules! fraction_fraction_ops {
             type Output = Fraction;
 
             fn div(self, rhs: $rhs) -> Self::Output {
-                Fraction(self.0 * rhs.1, self.1 * rhs.0).reduce()
+                Fraction(self.0 * rhs.1, self.1 * rhs.0)
             }
         }
 
@@ -123,7 +127,7 @@ macro_rules! fraction_fraction_ops {
             type Output = Fraction;
 
             fn add(self, rhs: $rhs) -> Self::Output {
-                Fraction(self.0 * rhs.1 + rhs.0 * self.1, self.1 * rhs.1).reduce()
+                Fraction(self.0 * rhs.1 + rhs.0 * self.1, self.1 * rhs.1)
             }
         }
 
@@ -131,7 +135,7 @@ macro_rules! fraction_fraction_ops {
             type Output = Fraction;
 
             fn sub(self, rhs: $rhs) -> Self::Output {
-                Fraction(self.0 * rhs.1 - rhs.0 * self.1, self.1 * rhs.1).reduce()
+                Fraction(self.0 * rhs.1 - rhs.0 * self.1, self.1 * rhs.1)
             }
         }
     };
@@ -167,9 +171,9 @@ impl std::ops::Add<&LinearEquation> for &LinearEquation {
         LinearEquation {
             a: (self.a.iter())
                 .zip(rhs.a.iter())
-                .map(|(a, b)| a + b)
+                .map(|(a, b)| (a + b).reduce())
                 .collect(),
-            b: &self.b + &rhs.b,
+            b: (self.b + rhs.b).reduce(),
         }
     }
 }
@@ -179,8 +183,8 @@ impl std::ops::Mul<Fraction> for &LinearEquation {
 
     fn mul(self, rhs: Fraction) -> Self::Output {
         LinearEquation {
-            a: self.a.iter().map(|c| c * rhs).collect(),
-            b: &self.b * rhs,
+            a: self.a.iter().map(|c| (c * rhs).reduce()).collect(),
+            b: (self.b * rhs).reduce(),
         }
     }
 }
@@ -194,7 +198,7 @@ impl LinearEquation {
             .get_vars_except(index)
             .map(|i| &self.a[i] * values[i])
             .sum::<Fraction>();
-        return (&self.b - others) / &self.a[index];
+        return ((self.b - others) / self.a[index]).reduce();
     }
 
     fn get_implied_bound(&self, index: usize, bounds: &Vec<Bound>) -> Bound {
@@ -203,9 +207,9 @@ impl LinearEquation {
         }
         let other_bound = self
             .get_vars_except(index)
-            .map(|i| &bounds[i] * self.a[i])
+            .map(|i| bounds[i] * self.a[i])
             .fold(Bound::point(0.into()), |a, b| a + b);
-        &((&other_bound * (-1).into()) + self.b) * (Fraction::from(1) / self.a[index])
+        (other_bound * (-1).into() + self.b) * (Fraction::from(1) / self.a[index])
     }
 
     fn get_vars(&self) -> impl Iterator<Item = usize> {
@@ -256,66 +260,73 @@ impl Bound {
     }
 }
 
-impl std::ops::Add<Fraction> for Bound {
-    type Output = Bound;
+macro_rules! bound_ops {
+    ($bound:ty) => {
+        impl std::ops::Add<Fraction> for $bound {
+            type Output = Bound;
 
-    fn add(self, rhs: Fraction) -> Self::Output {
-        Bound(self.0.map(|l| l + rhs), self.1.map(|u| u + rhs))
-    }
-}
-
-impl std::ops::Add<Bound> for Bound {
-    type Output = Bound;
-
-    fn add(self, rhs: Bound) -> Self::Output {
-        Bound(
-            self.0.map(|l| rhs.0.map(|ll| l + ll)).unwrap_or(None),
-            self.1.map(|u| rhs.1.map(|uu| u + uu)).unwrap_or(None),
-        )
-    }
-}
-
-impl std::ops::Mul<Fraction> for &Bound {
-    type Output = Bound;
-
-    fn mul(self, rhs: Fraction) -> Self::Output {
-        if rhs == 0 {
-            Bound::point(0.into())
-        } else if rhs > Fraction::from(0) {
-            Bound(self.0.map(|l| l * rhs), self.1.map(|u| u * rhs))
-        } else {
-            Bound(self.1.map(|u| u * rhs), self.0.map(|l| l * rhs))
+            fn add(self, rhs: Fraction) -> Self::Output {
+                Bound(self.0.map(|l| (l + rhs).reduce()), self.1.map(|u| (u + rhs).reduce()))
+            }
         }
-    }
-}
 
-impl std::ops::BitAnd<Bound> for &Bound {
-    type Output = Option<Bound>;
+        impl std::ops::Add<Bound> for $bound {
+            type Output = Bound;
 
-    fn bitand(self, rhs: Bound) -> Self::Output {
-        let low = self.0.max(rhs.0);
-        let high = [self.1, rhs.1].iter().filter_map(|v| v.clone()).min();
-        match (low, high) {
-            (Some(l), Some(h)) => {
-                if h < l {
-                    None
+            fn add(self, rhs: Bound) -> Self::Output {
+                Bound(
+                    self.0.map(|l| rhs.0.map(|ll| (l + ll).reduce())).unwrap_or(None),
+                    self.1.map(|u| rhs.1.map(|uu| (u + uu).reduce())).unwrap_or(None),
+                )
+            }
+        }
+
+        impl std::ops::Mul<Fraction> for $bound {
+            type Output = Bound;
+
+            fn mul(self, rhs: Fraction) -> Self::Output {
+                if rhs == 0 {
+                    Bound::point(0.into())
+                } else if rhs > Fraction::from(0) {
+                    Bound(self.0.map(|l| l * rhs), self.1.map(|u| (u * rhs).reduce()))
                 } else {
-                    Some(Bound(low, high))
+                    Bound(self.1.map(|u| u * rhs), self.0.map(|l| (l * rhs).reduce()))
                 }
             }
-            _ => Some(Bound(low, high)),
         }
-    }
+
+        impl std::ops::BitAnd<Bound> for $bound {
+            type Output = Option<Bound>;
+
+            fn bitand(self, rhs: Bound) -> Self::Output {
+                let low = self.0.max(rhs.0);
+                let high = [self.1, rhs.1].iter().filter_map(|v| v.clone()).min();
+                match (low, high) {
+                    (Some(l), Some(h)) => {
+                        if h < l {
+                            None
+                        } else {
+                            Some(Bound(low, high))
+                        }
+                    }
+                    _ => Some(Bound(low, high)),
+                }
+            }
+        }
+
+        impl std::ops::BitOr<Bound> for $bound {
+            type Output = Bound;
+
+            fn bitor(self, rhs: Bound) -> Self::Output {
+                let low = [self.0, rhs.0].iter().filter_map(|v| v.clone()).min();
+                Bound(low, self.1.max(rhs.1))
+            }
+        }
+    };
 }
 
-impl std::ops::BitOr<Bound> for &Bound {
-    type Output = Bound;
-
-    fn bitor(self, rhs: Bound) -> Self::Output {
-        let low = [self.0, rhs.0].iter().filter_map(|v| v.clone()).min();
-        Bound(low, self.1.max(rhs.1))
-    }
-}
+bound_ops!(Bound);
+bound_ops!(&Bound);
 
 impl std::fmt::Debug for Bound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -387,7 +398,7 @@ impl ReducedRowEcheleon {
         self.bounds.len()
     }
 
-    pub fn intersect_bound(&mut self, var: usize, bound: Bound) {
+    pub fn restrict_bound(&mut self, var: usize, bound: Bound) {
         if let Some(new_bound) = &self.bounds[var] & bound {
             self.bounds[var] = new_bound;
         } else {
@@ -401,9 +412,8 @@ impl ReducedRowEcheleon {
         for pivot in pivots {
             let row = &self.system.rows[self.pivots[&pivot]];
             for var in row.get_vars() {
-                if let Some(new_bounds) =
-                    &self.bounds[var] & row.get_implied_bound(var, &self.bounds)
-                {
+                let new_bound = row.get_implied_bound(var, &self.bounds);
+                if let Some(new_bounds) = &self.bounds[var] & new_bound {
                     self.bounds[var] = new_bounds
                 } else {
                     panic!("infer_bounds: No solution for {var}");
@@ -421,7 +431,7 @@ impl ReducedRowEcheleon {
             let base = self.accumulate_free_options(vars, free);
             let bounds = &self.bounds[i];
             Box::new(base.flat_map(move |r| {
-                bounds.integer_range(100).map(move |value| {
+                bounds.integer_range(15).map(move |value| {
                     let mut new = r.clone();
                     new[i] = value;
                     new

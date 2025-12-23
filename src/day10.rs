@@ -119,7 +119,7 @@ fn fewest_light_presses(machine: Machine) -> usize {
 fn fewest_joltage_presses(machine: Machine) -> usize {
     let mut rre: ReducedRowEcheleon = machine.into();
     (0..rre.get_var_count())
-        .for_each(|i| rre.intersect_bound(i, Bound::closed_low(Fraction::from(0))));
+        .for_each(|i| rre.restrict_bound(i, Bound::closed_low(Fraction::from(0))));
     rre.infer_bounds();
     rre.get_solutions()
         .map(|r| r.iter().sum::<i32>() as usize)
