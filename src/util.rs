@@ -62,3 +62,13 @@ pub fn zop<'a, T>(a: &'a Vec<T>, b: &'a Vec<T>, f: fn(&'a T, &'a T) -> T) -> Vec
 pub fn mid(s: &str, i: usize) -> &str {
     &s[i..(s.len() - i)]
 }
+
+pub const fn gcd(mut a: i32, mut b: i32) -> i32 {
+    if b > a {
+        (a, b) = (b, a);
+    }
+    while b != 0 {
+        (a, b) = (b, a % b);
+    }
+    a
+}

@@ -1,13 +1,13 @@
 use std::collections::{HashSet, VecDeque};
 
 use super::{
-    ilp::{Bound, LinearEquation, LinearSystem, ReducedRowEcheleon},
+    ilp::{Bound, Fraction, LinearEquation, LinearSystem, ReducedRowEcheleon},
     types::Part,
     util::{mid, parse},
 };
 
 #[rustfmt::skip]
-pub static PARTS: &'static [Part<'static>] = &super::example_parts![
+pub static PARTS: &'static [Part<'static>] = &super::all_parts![
     |i| sum_fewest_presses(i, fewest_light_presses),
     |i| sum_fewest_presses(i, fewest_joltage_presses)
 ];
@@ -63,9 +63,9 @@ impl Into<LinearSystem> for Machine {
                 a: self
                     .buttons
                     .iter()
-                    .map(|b| ((b.wires >> i) & 1) as i32)
+                    .map(|b| (((b.wires >> i) & 1) as i32).into())
                     .collect(),
-                b: *j as i32,
+                b: (*j as i32).into(),
             })
             .collect()
     }
@@ -118,9 +118,11 @@ fn fewest_light_presses(machine: Machine) -> usize {
 
 fn fewest_joltage_presses(machine: Machine) -> usize {
     let mut rre: ReducedRowEcheleon = machine.into();
-    (0..rre.get_var_count()).for_each(|i| rre.apply_bound(i, Bound::closed_low(0)));
+    (0..rre.get_var_count())
+        .for_each(|i| rre.intersect_bound(i, Bound::closed_low(Fraction::from(0))));
     rre.infer_bounds();
-    println!("\nRRE for Machine:");
-    rre.print_info();
-    0
+    rre.get_solutions()
+        .map(|r| r.iter().sum::<i32>() as usize)
+        .min()
+        .expect("no solution")
 }
