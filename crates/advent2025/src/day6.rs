@@ -1,4 +1,4 @@
-use super::{all_parts, types::Part, util::parse};
+use adventlib::{Part, all_parts, util::parse};
 
 pub static PARTS: &'static [Part<'static>] =
     &all_parts![|s| sum_ops(s, parse_rows), |s| sum_ops(s, parse_cols)];

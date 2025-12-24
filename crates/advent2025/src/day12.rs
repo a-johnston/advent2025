@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use super::{types::Part, util::parse};
+use adventlib::{Part, util::parse};
 
 pub static PARTS: &'static [Part<'static>] = &[Part::new("Input", "input.txt", solve)];
 

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use super::types::Part;
+use adventlib::Part;
 
 pub static PARTS: &'static [Part<'static>] = &[
     Part::new("Example", "example.txt", count_all_paths),

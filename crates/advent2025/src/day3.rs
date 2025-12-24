@@ -1,4 +1,4 @@
-use super::{all_parts, types::Part};
+use adventlib::{Part, all_parts};
 
 pub static PARTS: &'static [Part<'static>] = &all_parts![part_1, part_2];
 

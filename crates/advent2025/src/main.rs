@@ -4,6 +4,8 @@ use std::{
     time::SystemTime,
 };
 
+use adventlib::{Part, util};
+
 mod day1;
 mod day2;
 mod day3;
@@ -16,12 +18,9 @@ mod day9;
 mod day10;
 mod day11;
 mod day12;
-mod types;
-mod ilp;
-mod util;
 
 static DELIMS: &'static [&'static str] = &["-", ".."];
-static PROBLEMS: &'static [&'static [types::Part<'static>]] = &[
+static PROBLEMS: &'static [&'static [Part<'static>]] = &[
     &day1::PARTS,
     &day2::PARTS,
     &day3::PARTS,

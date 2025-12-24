@@ -1,36 +1,5 @@
 use std::{cmp, fmt};
 
-type Solver = fn(&str) -> String;
-
-pub struct Part<'a> {
-    pub name: &'a str,
-    pub file: &'a str,
-    pub solver: Solver,
-}
-
-impl<'a> Part<'a> {
-    pub const fn new(name: &'a str, file: &'a str, solver: Solver) -> Self {
-        Self {
-            name: name,
-            file: file,
-            solver: solver,
-        }
-    }
-}
-
-#[macro_export]
-macro_rules! all_parts {
-    ( $( $solver:expr ),* ) => {
-        [ $( Part::new("Example", "example.txt", $solver), Part::new("Input", "input.txt", $solver) ),* ]
-    };
-}
-
-#[macro_export]
-macro_rules! example_parts {
-    ( $( $solver:expr ),* ) => {
-        [ $( Part::new("Example", "example.txt", $solver) ),* ]
-    };
-}
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug, PartialOrd, Ord)]
 pub struct Vec3(pub i64, pub i64, pub i64);

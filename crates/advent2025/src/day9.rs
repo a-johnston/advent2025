@@ -1,12 +1,13 @@
 use std::collections::{BinaryHeap, HashMap};
 
-use super::{
-    types::{ClosedVolume, Part, Vec3},
+use adventlib::{
+    Part, all_parts,
+    types::{ClosedVolume, Vec3},
     util::index_posmod,
 };
 
 pub static PARTS: &'static [Part<'static>] =
-    &super::all_parts![find_largest_rect, find_largest_contained_rec];
+    &all_parts![find_largest_rect, find_largest_contained_rec];
 
 fn find_largest_rect(input: &str) -> String {
     let mut points: Vec<_> = input.split('\n').map(Vec3::parse).collect();

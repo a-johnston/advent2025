@@ -1,8 +1,10 @@
-use super::types::Part;
-use super::types::{ClosedInterval, ClosedIntervals};
-use super::util::parse;
+use adventlib::{
+    Part, all_parts,
+    types::{ClosedInterval, ClosedIntervals},
+    util::parse,
+};
 
-pub static PARTS: &'static [Part<'static>] = &super::all_parts![count_spoiled, count_total];
+pub static PARTS: &'static [Part<'static>] = &all_parts![count_spoiled, count_total];
 
 fn read_sections(input: &str) -> (&str, &str) {
     input.split_once("\n\n").expect("Wrong number of sections")

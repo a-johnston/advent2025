@@ -1,9 +1,9 @@
 use std::cmp::max;
 
-use super::types::{ClosedInterval, Part};
+use adventlib::{Part, all_parts, types::ClosedInterval};
 
 pub static PARTS: &'static [Part<'static>] =
-    &super::all_parts![parse_and_sum_twice_funny, parse_and_sum_all_funny];
+    &all_parts![parse_and_sum_twice_funny, parse_and_sum_all_funny];
 
 const fn num_digits(i: i64) -> u32 {
     i.ilog10() + 1

@@ -1,13 +1,13 @@
 use std::collections::{HashSet, VecDeque};
 
-use super::{
+use adventlib::{
+    Part, all_parts,
     ilp::{Bound, Fraction, LinearEquation, LinearSystem, ReducedRowEcheleon},
-    types::Part,
     util::{mid, parse},
 };
 
 #[rustfmt::skip]
-pub static PARTS: &'static [Part<'static>] = &super::all_parts![
+pub static PARTS: &'static [Part<'static>] = &all_parts![
     |i| sum_fewest_presses(i, fewest_light_presses),
     |i| sum_fewest_presses(i, fewest_joltage_presses)
 ];

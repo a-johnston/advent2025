@@ -1,12 +1,14 @@
 use std::vec::Vec;
 
-use super::types::Part;
-use super::util::{parse, posmod};
+use adventlib::{
+    Part, all_parts,
+    util::{parse, posmod},
+};
 
 const START: i32 = 50;
 const SIZE: i32 = 100;
 
-pub static PARTS: &'static [Part<'static>] = &super::all_parts![count_zeros, count_zero_passes];
+pub static PARTS: &'static [Part<'static>] = &all_parts![count_zeros, count_zero_passes];
 
 fn parse_rotation(rot: &str) -> i32 {
     parse::<i32>(&rot[1..]) * ((rot.starts_with('R') as i32) * 2 - 1)

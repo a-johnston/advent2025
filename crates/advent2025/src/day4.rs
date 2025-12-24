@@ -1,8 +1,4 @@
-use super::{
-    all_parts,
-    types::{Part, Vec3},
-    util::Partition,
-};
+use adventlib::{Part, all_parts, types::Vec3, util::Partition};
 
 pub static PARTS: &'static [Part<'static>] = &all_parts![single_pass, many_passes];
 
