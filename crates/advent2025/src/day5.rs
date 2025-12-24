@@ -1,6 +1,6 @@
 use adventlib::{
     Part, all_parts,
-    types::{ClosedInterval, ClosedIntervals},
+    interval::{ClosedInterval, ClosedIntervals},
     util::parse,
 };
 

@@ -1,6 +1,6 @@
 use std::iter;
 
-use adventlib::{all_parts, Part};
+use adventlib::{Part, all_parts};
 
 pub static PARTS: &'static [Part<'static>] =
     &all_parts![count_classical_splits, count_quantum_splits];

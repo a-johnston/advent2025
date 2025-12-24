@@ -1,6 +1,6 @@
 use std::cmp::max;
 
-use adventlib::{Part, all_parts, types::ClosedInterval};
+use adventlib::{Part, all_parts, interval::ClosedInterval};
 
 pub static PARTS: &'static [Part<'static>] =
     &all_parts![parse_and_sum_twice_funny, parse_and_sum_all_funny];

@@ -1,6 +1,6 @@
 use std::collections::{BinaryHeap, HashMap};
 
-use adventlib::{Part, types::Vec3};
+use adventlib::{Part, vec::Vec3};
 
 pub static PARTS: &'static [Part<'static>] = &[
     Part::new("Example", "example.txt", |s| times_top_circuits(s, 10, 3)),

@@ -1,10 +1,6 @@
 use std::collections::{BinaryHeap, HashMap};
 
-use adventlib::{
-    Part, all_parts,
-    types::{ClosedVolume, Vec3},
-    util::index_posmod,
-};
+use adventlib::{Part, all_parts, interval::ClosedVolume, util::index_posmod, vec::Vec3};
 
 pub static PARTS: &'static [Part<'static>] =
     &all_parts![find_largest_rect, find_largest_contained_rec];
@@ -45,15 +41,15 @@ fn get_poison_points(points: &Vec<Vec3>) -> Vec<Vec3> {
         let last_edge = &(&this - &points[index_posmod(i, -1, points.len())]).signum();
         let next_edge = &(&points[index_posmod(i, 1, points.len())] - &this).signum();
         if ccw(last_edge, next_edge) {
-            let new = &(&this - &last_edge) + &next_edge;
+            let new = (&this - last_edge) + next_edge;
             if poison.len() > 0 {
                 let mut interpolated = interpolate(&poison[poison.len() - 1], &new, 500);
                 poison.append(&mut interpolated);
             }
             poison.push(new);
         } else {
-            poison.push(&this + &last_edge);
-            poison.push(&this - &next_edge);
+            poison.push(&this + last_edge);
+            poison.push(&this - next_edge);
         }
     }
     return poison;

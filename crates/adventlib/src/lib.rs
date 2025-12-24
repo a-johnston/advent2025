@@ -1,6 +1,8 @@
+pub mod fraction;
 pub mod ilp;
-pub mod types;
+pub mod interval;
 pub mod util;
+pub mod vec;
 
 type Solver = fn(&str) -> String;
 

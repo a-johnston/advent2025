@@ -2,7 +2,8 @@ use std::collections::{HashSet, VecDeque};
 
 use adventlib::{
     Part, all_parts,
-    ilp::{Bound, Fraction, LinearEquation, LinearSystem, ReducedRowEcheleon},
+    fraction::Fraction,
+    ilp::{Bound, LinearEquation, LinearSystem, ReducedRowEcheleon},
     util::{mid, parse},
 };
 
