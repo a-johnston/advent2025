@@ -2,5 +2,6 @@
 members = [
     "crates/advent2025",
     "crates/adventlib",
+    "crates/adventproc",
 ]
 resolver="3"

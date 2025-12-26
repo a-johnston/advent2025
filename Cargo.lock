@@ -7,8 +7,13 @@ name = "advent2025"
 version = "0.1.0"
 dependencies = [
  "adventlib",
+ "adventproc",
 ]
 
 [[package]]
 name = "adventlib"
+version = "0.1.0"
+
+[[package]]
+name = "adventproc"
 version = "0.1.0"
